@@ -94,7 +94,7 @@ const products = [
     name: "Acer Predator Helios 300", 
     price: 1599, 
     category: "gaming", 
-    img: "images/Acer Predator Helios 300.jpg",
+    img: "images/Accer Predator.jpg",
     desc: "High-end gaming laptop with advanced cooling and fast refresh display.",
     specs: {
       CPU: "Intel Core i7-13700H",
@@ -225,7 +225,8 @@ document.getElementById('checkoutBtn').addEventListener('click', () => {
     alert('Please select items to checkout');
     return;
   }
-  alert(`Checkout ${selected.length} item(s) for ${formatPrice(calculateTotal())}`);
+  renderCheckout(selected);
+  document.getElementById('checkoutBackdrop').classList.add('open');
 });
 
 document.getElementById('modalBackdrop').addEventListener('click', closeModal);
@@ -390,7 +391,6 @@ window.toggleSelect = toggleSelect;
 window.changeQty = changeQty;
 
 // Open Checkout Modal
-// Open Checkout Modal
 document.getElementById('checkoutBtn').addEventListener('click', () => {
   const selected = cart.filter(item => item.selected);
   if (selected.length === 0) {
@@ -440,7 +440,6 @@ function renderCheckout(items) {
 }
 
 // Confirm Checkout
-// Use form submit instead of button click
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
   e.preventDefault();
 
@@ -453,6 +452,33 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     return;
   }
 
+  if (payment === "KHQR") {
+    document.getElementById('checkoutBackdrop').classList.remove('open');
+    document.getElementById('qrBackdrop').classList.add('open');
+  } else {
+    processOrder(name, phone, payment);
+  }
+});
+
+// QR Modal handlers
+document.getElementById('cancelQr').addEventListener('click', () => {
+  document.getElementById('qrBackdrop').classList.remove('open');
+});
+
+document.getElementById('qrBackdrop').addEventListener('click', () => {
+  document.getElementById('qrBackdrop').classList.remove('open');
+});
+
+document.getElementById('confirmPayment').addEventListener('click', () => {
+  document.getElementById('qrBackdrop').classList.remove('open');
+  const name = document.getElementById('checkoutName').value.trim();
+  const phone = document.getElementById('checkoutPhone').value.trim();
+  const payment = document.getElementById('checkoutPayment').value;
+  processOrder(name, phone, payment);
+});
+
+// Function to process the order
+function processOrder(name, phone, payment) {
   const order = {
     customerName: name,
     contact: phone,
@@ -461,16 +487,14 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     total: document.getElementById('checkoutTotal').textContent
   };
 
-  alert(`✅ Order successfully placed!\n\nName: ${name}\nContact: ${phone}\nPayment: ${payment}\nTotal: ${order.total}`);
+  alert(`Order successfully placed!\n\nName: ${name}\nContact: ${phone}\nPayment: ${payment}\nTotal: ${order.total}`);
 
   cart = cart.filter(item => !item.selected);
   renderCart();
-
-  document.getElementById('checkoutBackdrop').classList.remove('open');
-
   document.getElementById('checkoutForm').reset();
+}
 
-  // spece under product
+// spece under product
   
 
   function renderProducts(search='') {
@@ -514,9 +538,3 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     `;
   }).join('');
 }
-
-
-});
-
-
-

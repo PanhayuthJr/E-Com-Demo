@@ -11,7 +11,7 @@
     <div class="container">
       <div class="header-content">
         <a href="#" class="brand">
-          <div class="logo">💻</div>
+          <div class="logo">🔫</div>
           <div class="brand-text">
             <h1>LaptopShop</h1>
             <p>Premium laptops & computers</p>
@@ -154,6 +154,19 @@
           <button type="button" id="cancelCheckout" class="btn-outline">Cancel</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- QR Payment Modal -->
+  <div id="qrBackdrop" class="modal-backdrop">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h2 class="modal-title">Pay with KHQR</h2>
+      <img src="images/QRCODE.JPG" alt="KHQR Code" class="qr-image">
+      <p>Scan this QR code using your banking app to complete the payment.</p>
+      <div class="modal-actions">
+        <button type="button" id="confirmPayment" class="btn-primary">Payment Completed</button>
+        <button type="button" id="cancelQr" class="btn-outline">Cancel</button>
+      </div>
     </div>
   </div>
 
