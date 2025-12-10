@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LaptopShop - Premium Laptops & Computers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="#" class="brand">
+          <div class="logo">💻</div>
+          <div class="brand-text">
+            <h1>LaptopShop</h1>
+            <p>Premium laptops & computers</p>
+          </div>
+        </a>
+        
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input id="searchInput" type="search" placeholder="Search laptops by brand, model, or specs...">
+        </div>
+        
+        <button id="cartToggle" class="cart-btn">
+          🛒 Cart
+          <span id="cartCount" class="cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="categories" id="categories">
+      <button class="category-chip active" data-category="all">All Laptops</button>
+      <button class="category-chip" data-category="gaming">Gaming</button>
+      <button class="category-chip" data-category="business">Business</button>
+      <button class="category-chip" data-category="ultrabook">Ultrabook</button>
+      <button class="category-chip" data-category="budget">Budget</button>
+    </div>
+
+    <main>
+      <div class="section-header">
+        <h2>Featured Laptops</h2>
+      </div>
+      <div id="productsGrid" class="grid"></div>
+    </main>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 LaptopShop. Premium laptops and computers for every need.</p>
+    </div>
+  </footer>
+
+  <!-- Cart Panel -->
+  <aside id="cartPanel" class="cart-panel">
+    <div class="cart-header">
+      <h3>Shopping Cart</h3>
+      <button class="close-cart" id="closeCart">×</button>
+    </div>
+    <div class="select-all">
+      <input type="checkbox" id="selectAll">
+      <label for="selectAll">Select all items</label>
+    </div>
+    <div id="cartItems"></div>
+    <div class="cart-summary">
+      <div class="cart-summary-row">
+        <span>Subtotal:</span>
+        <span id="subtotal">$0.00</span>
+      </div>
+      <div class="cart-summary-row">
+        <span>Tax (10%):</span>
+        <span id="tax">$0.00</span>
+      </div>
+      <div class="cart-total">
+        <span>Total:</span>
+        <span id="cartTotal">$0.00</span>
+      </div>
+    </div>
+    <div class="cart-actions">
+      <button id="checkoutBtn" class="btn-primary">Proceed to Checkout</button>
+      <button id="clearBtn" class="btn-outline">Clear Cart</button>
+    </div>
+  </aside>
+
+  <!-- Product Modal -->
+  <div id="modalBackdrop" class="modal-backdrop" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div id="modalImg" class="modal-img"></div>
+    
+      <div class="modal-content">
+        <h3 id="modalTitle"></h3>
+        <div id="modalPrice" class="modal-price"></div>
+        <div id="modalDesc" class="modal-desc"></div>
+        <div id="modalSpecs"></div>
+        <div class="modal-actions">
+          <button id="modalAdd" class="btn-primary">Add to Cart</button>
+          <button id="modalClose" class="btn-outline">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div id="checkoutBackdrop" class="modal-backdrop">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h2 class="modal-title">Checkout</h2>
+
+      <!-- Cart Items Preview -->
+      <div id="checkoutItems" class="checkout-items"></div>
+
+      <!-- Cart Summary -->
+      <div class="cart-summary">
+        <div class="cart-summary-row">
+          <span>Subtotal:</span>
+          <span id="checkoutSubtotal">$0.00</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Tax (10%):</span>
+          <span id="checkoutTax">$0.00</span>
+        </div>
+        <div class="cart-total">
+          <span>Total:</span>
+          <span id="checkoutTotal">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Checkout Form -->
+      <form id="checkoutForm" class="checkout-form">
+        <div class="form-row">
+          <div class="form-group">
+            <input type="text" id="checkoutName" required placeholder=" ">
+            <label for="checkoutName">Full Name</label>
+          </div>
+          <div class="form-group">
+            <input type="text" id="checkoutPhone" required placeholder=" ">
+            <label for="checkoutPhone">Phone / Telegram</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <select id="checkoutPayment" required>
+            <option value="" disabled selected hidden>Select Payment Method</option>
+            <option value="KHQR">KHQR</option>
+            <option value="COD">Cash on Delivery</option>
+          </select>
+          <label for="checkoutPayment">Payment Method</label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Confirm Order</button>
+          <button type="button" id="cancelCheckout" class="btn-outline">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
