@@ -184,59 +184,268 @@ const products = [
 let cart = [];
 let currentCategory = 'all';
 
-renderProducts();
-updateCartCount();
+// Slideshow variables
+let currentSlide = 0;
+let slideInterval;
 
-document.getElementById('searchInput').addEventListener('input', e => {
-  renderProducts(e.target.value);
-});
-
-document.getElementById('cartToggle').addEventListener('click', () => {
-  document.getElementById('cartPanel').classList.add('open');
-});
-
-document.getElementById('closeCart').addEventListener('click', () => {
-  document.getElementById('cartPanel').classList.remove('open');
-});
-
-document.querySelectorAll('.category-chip').forEach(chip => {
-  chip.addEventListener('click', e => {
-    document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
-    e.target.classList.add('active');
-    currentCategory = e.target.dataset.category;
-    renderProducts();
-  });
-});
-
-document.getElementById('selectAll').addEventListener('change', e => {
-  cart.forEach(item => item.selected = e.target.checked);
-  renderCart();
-});
-
-document.getElementById('clearBtn').addEventListener('click', () => {
-  cart = [];
-  renderCart();
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  renderProducts();
   updateCartCount();
+  initSlideshow();
+  initEventListeners();
 });
 
-document.getElementById('checkoutBtn').addEventListener('click', () => {
-  const selected = cart.filter(item => item.selected);
-  if (selected.length === 0) {
-    alert('Please select items to checkout');
-    return;
+function initEventListeners() {
+  // Search input
+  document.getElementById('searchInput').addEventListener('input', e => {
+    renderProducts(e.target.value);
+  });
+
+  // Cart toggle
+  document.getElementById('cartToggle').addEventListener('click', () => {
+    document.getElementById('cartPanel').classList.add('open');
+  });
+
+  // Close cart
+  document.getElementById('closeCart').addEventListener('click', () => {
+    document.getElementById('cartPanel').classList.remove('open');
+  });
+
+  // Category chips
+  document.querySelectorAll('.category-chip').forEach(chip => {
+    chip.addEventListener('click', e => {
+      document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+      e.target.classList.add('active');
+      currentCategory = e.target.dataset.category;
+      renderProducts();
+    });
+  });
+
+  // Select all checkbox
+  document.getElementById('selectAll').addEventListener('change', e => {
+    cart.forEach(item => item.selected = e.target.checked);
+    renderCart();
+  });
+
+  // Remove selected button
+  document.getElementById('removeSelected').addEventListener('click', () => {
+    const selectedItems = cart.filter(item => item.selected);
+    if (selectedItems.length === 0) {
+      alert('Please select items to remove');
+      return;
+    }
+    
+    if (confirm(`Are you sure you want to remove ${selectedItems.length} selected item(s)?`)) {
+      cart = cart.filter(item => !item.selected);
+      renderCart();
+      updateCartCount();
+    }
+  });
+
+  // Clear cart button
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    if (cart.length === 0) {
+      alert('Cart is already empty');
+      return;
+    }
+    
+    if (confirm('Are you sure you want to clear the entire cart?')) {
+      cart = [];
+      renderCart();
+      updateCartCount();
+    }
+  });
+
+  // Checkout button
+  document.getElementById('checkoutBtn').addEventListener('click', () => {
+    const selected = cart.filter(item => item.selected);
+    if (selected.length === 0) {
+      alert('Please select items to checkout');
+      return;
+    }
+    renderCheckout(selected);
+    document.getElementById('checkoutBackdrop').classList.add('open');
+  });
+
+  // Modal close events
+  document.getElementById('modalBackdrop').addEventListener('click', closeModal);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+
+  // Checkout modal close
+  document.getElementById('cancelCheckout').addEventListener('click', () => {
+    document.getElementById('checkoutBackdrop').classList.remove('open');
+  });
+  
+  document.getElementById('checkoutBackdrop').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('checkoutBackdrop')) {
+      document.getElementById('checkoutBackdrop').classList.remove('open');
+    }
+  });
+
+  // Checkout form submission
+  document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    processCheckoutForm();
+  });
+
+  // QR modal handlers
+  document.getElementById('cancelQr').addEventListener('click', () => {
+    document.getElementById('qrBackdrop').classList.remove('open');
+    document.getElementById('checkoutBackdrop').classList.add('open');
+  });
+
+  document.getElementById('qrBackdrop').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('qrBackdrop')) {
+      document.getElementById('qrBackdrop').classList.remove('open');
+      document.getElementById('checkoutBackdrop').classList.add('open');
+    }
+  });
+
+  document.getElementById('confirmPayment').addEventListener('click', () => {
+    document.getElementById('qrBackdrop').classList.remove('open');
+    processOrderAfterPayment();
+  });
+
+  // Order confirmation close
+  document.getElementById('closeConfirmation').addEventListener('click', () => {
+    document.getElementById('confirmationBackdrop').classList.remove('open');
+  });
+  
+  document.getElementById('confirmationBackdrop').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('confirmationBackdrop')) {
+      document.getElementById('confirmationBackdrop').classList.remove('open');
+    }
+  });
+}
+
+function initSlideshow() {
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  const prevBtn = document.querySelector('.slide-arrow.prev');
+  const nextBtn = document.querySelector('.slide-arrow.next');
+  const slideBtns = document.querySelectorAll('.slide-btn');
+
+  // Start auto-slide
+  startAutoSlide();
+
+  // Event listeners for arrows
+  if (prevBtn) {
+    prevBtn.addEventListener('click', prevSlide);
   }
-  renderCheckout(selected);
-  document.getElementById('checkoutBackdrop').classList.add('open');
-});
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', nextSlide);
+  }
+  
+  // Event listeners for dots
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const slideIndex = parseInt(dot.dataset.slide);
+      goToSlide(slideIndex);
+    });
+  });
+  
+  // Event listeners for category buttons in slides
+  slideBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const category = btn.dataset.category;
+      if (category) {
+        // Activate the corresponding category chip
+        document.querySelectorAll('.category-chip').forEach(chip => {
+          chip.classList.remove('active');
+          if (chip.dataset.category === category) {
+            chip.classList.add('active');
+            currentCategory = category;
+          }
+        });
+        
+        // Scroll to categories section
+        document.querySelector('.categories').scrollIntoView({ 
+          behavior: 'smooth' 
+        });
+        
+        // Filter products
+        renderProducts();
+      }
+    });
+  });
+}
 
-document.getElementById('modalBackdrop').addEventListener('click', closeModal);
-document.getElementById('modalClose').addEventListener('click', closeModal);
+function startAutoSlide() {
+  // Clear existing interval
+  if (slideInterval) {
+    clearInterval(slideInterval);
+  }
+  
+  // Start new interval
+  slideInterval = setInterval(nextSlide, 5000);
+}
+
+function nextSlide() {
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  
+  // Remove active class from current slide
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  
+  // Calculate next slide
+  currentSlide = (currentSlide + 1) % slides.length;
+  
+  // Add active class to next slide
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+  
+  // Restart auto-slide timer
+  startAutoSlide();
+}
+
+function prevSlide() {
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  
+  // Remove active class from current slide
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  
+  // Calculate previous slide
+  currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+  
+  // Add active class to previous slide
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+  
+  // Restart auto-slide timer
+  startAutoSlide();
+}
+
+function goToSlide(index) {
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  
+  // Remove active class from current slide
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  
+  // Go to specified slide
+  currentSlide = index;
+  
+  // Add active class to new slide
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+  
+  // Restart auto-slide timer
+  startAutoSlide();
+}
 
 function renderProducts(search = '') {
   const grid = document.getElementById('productsGrid');
   const filtered = products.filter(p => {
     const matchesCategory = currentCategory === 'all' || p.category === currentCategory;
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
+                         p.desc.toLowerCase().includes(search.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -246,7 +455,7 @@ function renderProducts(search = '') {
   }
 
   grid.innerHTML = filtered.map(p => {
-    const specsArray = Object.entries(p.specs).slice(0, 2);
+    const specsArray = Object.entries(p.specs);
     
     const productSpecsHtml = specsArray.map(([key, value]) => `
       <div class="spec-item">
@@ -268,7 +477,9 @@ function renderProducts(search = '') {
           </div>
           <div class="product-footer">
             <div class="product-price">${formatPrice(p.price)}</div>
-            <button class="btn-add" onclick="event.stopPropagation(); addToCart(${p.id})">Add</button>
+            <button class="btn-add" onclick="event.stopPropagation(); addToCart(${p.id})">
+              🛒 Add
+            </button>
           </div>
         </div>
       </div>
@@ -286,6 +497,17 @@ function addToCart(id) {
   }
   renderCart();
   updateCartCount();
+  
+  // Show cart panel automatically on mobile
+  if (window.innerWidth <= 768) {
+    document.getElementById('cartPanel').classList.add('open');
+  }
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  renderCart();
+  updateCartCount();
 }
 
 function renderCart() {
@@ -296,10 +518,12 @@ function renderCart() {
     updateCartSummary();
     document.getElementById('selectAll').checked = false;
     document.getElementById('selectAll').disabled = true;
+    document.getElementById('removeSelected').style.display = 'none';
     return;
   }
 
   document.getElementById('selectAll').disabled = false;
+  document.getElementById('removeSelected').style.display = 'flex';
   
   container.innerHTML = cart.map((item, idx) => `
     <div class="cart-item">
@@ -310,10 +534,11 @@ function renderCart() {
         <div class="cart-item-price">${formatPrice(item.price)}</div>
         <div class="cart-item-actions">
           <button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button>
-          <span style="padding: 0 8px; font-weight: 600;">${item.quantity}</span>
+          <span style="padding: 0 8px; font-weight: 600; font-size: 14px;">${item.quantity}</span>
           <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
         </div>
       </div>
+      <button class="cart-item-remove" onclick="removeFromCart(${idx})" title="Remove item">×</button>
     </div>
   `).join('');
 
@@ -328,7 +553,9 @@ function toggleSelect(idx) {
 
 function changeQty(idx, delta) {
   cart[idx].quantity += delta;
-  if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+  if (cart[idx].quantity <= 0) {
+    cart.splice(idx, 1);
+  }
   renderCart();
   updateCartCount();
 }
@@ -384,48 +611,21 @@ function formatPrice(price) {
   return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-// Expose functions for inline onclick
-window.openModal = openModal;
-window.addToCart = addToCart;
-window.toggleSelect = toggleSelect;
-window.changeQty = changeQty;
-
-// Open Checkout Modal
-document.getElementById('checkoutBtn').addEventListener('click', () => {
-  const selected = cart.filter(item => item.selected);
-  if (selected.length === 0) {
-    alert('Please select items to checkout');
-    return;
-  }
-  renderCheckout(selected);
-  document.getElementById('checkoutBackdrop').classList.add('open');
-});
-
-// Close Checkout Modal
-document.getElementById('cancelCheckout').addEventListener('click', () => {
-  document.getElementById('checkoutBackdrop').classList.remove('open');
-});
-document.getElementById('checkoutBackdrop').addEventListener('click', () => {
-  document.getElementById('checkoutBackdrop').classList.remove('open');
-});
-
-// Render Checkout Items
 function renderCheckout(items) {
   const container = document.getElementById('checkoutItems');
+  const qrAmount = document.getElementById('qrAmount');
+  
   if (items.length === 0) {
     container.innerHTML = '<p>No items selected</p>';
     return;
   }
 
   container.innerHTML = items.map(item => `
-    <div class="cart-item">
-      <div class="cart-item-img">${item.img ? `<img src="${item.img}" alt="${item.name}" style="width:60px;height:60px;border-radius:6px;">` : '💻'}</div>
-      <div class="cart-item-info">
-        <div class="cart-item-title">${item.name}</div>
-        <div class="cart-item-price">${formatPrice(item.price)}</div>
-        <div class="cart-item-actions">
-          Quantity: ${item.quantity}
-        </div>
+    <div class="checkout-item">
+      <img src="${item.img}" alt="${item.name}">
+      <div class="checkout-item-info">
+        <div class="checkout-item-title">${item.name}</div>
+        <div class="checkout-item-price">${formatPrice(item.price)} × ${item.quantity}</div>
       </div>
     </div>
   `).join('');
@@ -437,18 +637,26 @@ function renderCheckout(items) {
   document.getElementById('checkoutSubtotal').textContent = formatPrice(subtotal);
   document.getElementById('checkoutTax').textContent = formatPrice(tax);
   document.getElementById('checkoutTotal').textContent = formatPrice(total);
+  
+  // Update QR amount
+  if (qrAmount) {
+    qrAmount.textContent = formatPrice(total);
+  }
 }
 
-// Confirm Checkout
-document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-
+function processCheckoutForm() {
   const name = document.getElementById('checkoutName').value.trim();
   const phone = document.getElementById('checkoutPhone').value.trim();
   const payment = document.getElementById('checkoutPayment').value;
+  const terms = document.getElementById('termsAgree').checked;
 
   if (!name || !phone || !payment) {
-    alert('Please fill all fields and select a payment method');
+    alert('Please fill all fields');
+    return;
+  }
+
+  if (!terms) {
+    alert('Please agree to the Terms & Conditions');
     return;
   }
 
@@ -458,83 +666,48 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
   } else {
     processOrder(name, phone, payment);
   }
-});
+}
 
-// QR Modal handlers
-document.getElementById('cancelQr').addEventListener('click', () => {
-  document.getElementById('qrBackdrop').classList.remove('open');
-});
-
-document.getElementById('qrBackdrop').addEventListener('click', () => {
-  document.getElementById('qrBackdrop').classList.remove('open');
-});
-
-document.getElementById('confirmPayment').addEventListener('click', () => {
-  document.getElementById('qrBackdrop').classList.remove('open');
+function processOrderAfterPayment() {
   const name = document.getElementById('checkoutName').value.trim();
   const phone = document.getElementById('checkoutPhone').value.trim();
   const payment = document.getElementById('checkoutPayment').value;
   processOrder(name, phone, payment);
-});
+}
 
-// Function to process the order
 function processOrder(name, phone, payment) {
+  const selectedItems = cart.filter(item => item.selected);
   const order = {
     customerName: name,
     contact: phone,
     paymentMethod: payment,
-    items: cart.filter(item => item.selected),
-    total: document.getElementById('checkoutTotal').textContent
+    items: selectedItems,
+    total: document.getElementById('checkoutTotal').textContent,
+    orderId: `#LSP-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
   };
 
-  alert(`Order successfully placed!\n\nName: ${name}\nContact: ${phone}\nPayment: ${payment}\nTotal: ${order.total}`);
-
-  cart = cart.filter(item => !item.selected);
-  renderCart();
-  document.getElementById('checkoutForm').reset();
-}
-
-// spece under product
+  // Update order ID in confirmation modal
+  document.getElementById('orderId').textContent = order.orderId;
   
-
-  function renderProducts(search='') {
-  const grid = document.getElementById('productsGrid');
-  const filtered = products.filter(p => 
-    (currentCategory === 'all' || p.category === currentCategory) &&
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  if (!filtered.length) {
-    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><p>No products found</p></div>';
-    return;
-  }
-
-  grid.innerHTML = filtered.map(p => {
-    // Show all specs in key: value format
-    const productSpecsHtml = Object.entries(p.specs).map(([key, value]) => `
-      <div class="spec-item">
-        <span class="spec-key">${key}:</span>
-        <span class="spec-value-mini">${value}</span>
-      </div>
-    `).join('');
-
-    return `
-      <div class="product-card" onclick="openModal(${p.id})">
-        <div class="product-img">
-          <img src="${p.img}" alt="${p.name}">
-        </div>
-        <div class="product-info">
-          <div class="product-title">${p.name}</div>
-          <div class="product-desc">${p.desc}</div>
-          <div class="product-specs">
-            ${productSpecsHtml} <!-- ALL specs shown here -->
-          </div>
-          <div class="product-footer">
-            <div class="product-price">${formatPrice(p.price)}</div>
-            <button class="btn-add" onclick="event.stopPropagation(); addToCart(${p.id})">Add</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  // Show confirmation modal
+  document.getElementById('confirmationBackdrop').classList.add('open');
+  
+  // Remove selected items from cart
+  cart = cart.filter(item => !item.selected);
+  
+  // Reset and update UI
+  renderCart();
+  updateCartCount();
+  document.getElementById('checkoutForm').reset();
+  document.getElementById('checkoutBackdrop').classList.remove('open');
+  document.getElementById('qrBackdrop').classList.remove('open');
 }
+
+// Expose functions for inline onclick
+window.openModal = openModal;
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.toggleSelect = toggleSelect;
+window.changeQty = changeQty;
+window.prevSlide = prevSlide;
+window.nextSlide = nextSlide;

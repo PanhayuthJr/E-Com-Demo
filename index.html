@@ -11,7 +11,7 @@
     <div class="container">
       <div class="header-content">
         <a href="#" class="brand">
-          <div class="logo">🔫</div>
+          <img src="images/logo (2).png" alt="LaptopShop Logo" class="logo">
           <div class="brand-text">
             <h1>LaptopShop</h1>
             <p>Premium laptops & computers</p>
@@ -32,6 +32,67 @@
   </header>
 
   <div class="container">
+    <!-- Promotional Banner/Slideshow -->
+    <div class="promo-banner">
+      <div class="slideshow-container">
+        <!-- Slide 1 -->
+        <div class="slide active">
+          <div class="slide-content">
+            <div class="slide-text">
+              <span class="slide-tag">BLACK FRIDAY SALE</span>
+              <h2>Up to 40% Off Gaming Laptops</h2>
+              <p>High-performance gaming laptops with RTX series at unbeatable prices</p>
+              <a href="#" class="slide-btn" data-category="gaming">Shop Gaming</a>
+            </div>
+            <div class="slide-image">
+              <img src="images/Asus Dis.jpg" alt="Gaming Laptop Sale">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Slide 2 -->
+        <div class="slide">
+          <div class="slide-content">
+            <div class="slide-text">
+              <span class="slide-tag">LIMITED TIME</span>
+              <h2>Business Laptops - 30% Off</h2>
+              <p>Premium business laptops with enterprise features for professionals</p>
+              <a href="#" class="slide-btn" data-category="business">Shop Business</a>
+            </div>
+            <div class="slide-image">
+              <img src="images/download (5).jpg" alt="Business Laptop Sale">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Slide 3 -->
+        <div class="slide">
+          <div class="slide-content">
+            <div class="slide-text">
+              <span class="slide-tag">WEEKEND DEAL</span>
+              <h2>Budget Laptops from $399</h2>
+              <p>Perfect for students and everyday use with great value for money</p>
+              <a href="#" class="slide-btn" data-category="budget">Shop Budget</a>
+            </div>
+            <div class="slide-image">
+              <img src="images/budget-sale.jpg" alt="Budget Laptop Sale">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Navigation dots -->
+        <div class="slide-dots">
+          <span class="dot active" data-slide="0"></span>
+          <span class="dot" data-slide="1"></span>
+          <span class="dot" data-slide="2"></span>
+        </div>
+        
+        <!-- Navigation arrows -->
+        <button class="slide-arrow prev" onclick="prevSlide()">❮</button>
+        <button class="slide-arrow next" onclick="nextSlide()">❯</button>
+      </div>
+    </div>
+
     <div class="categories" id="categories">
       <button class="category-chip active" data-category="all">All Laptops</button>
       <button class="category-chip" data-category="gaming">Gaming</button>
@@ -63,6 +124,7 @@
     <div class="select-all">
       <input type="checkbox" id="selectAll">
       <label for="selectAll">Select all items</label>
+      <button id="removeSelected" class="btn-remove-selected" style="margin-left: auto;">Remove Selected</button>
     </div>
     <div id="cartItems"></div>
     <div class="cart-summary">
@@ -80,7 +142,10 @@
       </div>
     </div>
     <div class="cart-actions">
-      <button id="checkoutBtn" class="btn-primary">Proceed to Checkout</button>
+      <button id="checkoutBtn" class="btn-primary">
+        <span class="btn-icon">→</span>
+        Proceed to Checkout
+      </button>
       <button id="clearBtn" class="btn-outline">Clear Cart</button>
     </div>
   </aside>
@@ -96,7 +161,10 @@
         <div id="modalDesc" class="modal-desc"></div>
         <div id="modalSpecs"></div>
         <div class="modal-actions">
-          <button id="modalAdd" class="btn-primary">Add to Cart</button>
+          <button id="modalAdd" class="btn-primary">
+            <span class="btn-icon">🛒</span>
+            Add to Cart
+          </button>
           <button id="modalClose" class="btn-outline">Close</button>
         </div>
       </div>
@@ -105,14 +173,21 @@
 
   <!-- Checkout Modal -->
   <div id="checkoutBackdrop" class="modal-backdrop">
-    <div class="modal" onclick="event.stopPropagation()">
-      <h2 class="modal-title">Checkout</h2>
+    <div class="modal checkout-modal" onclick="event.stopPropagation()">
+      <div class="checkout-header">
+        <h2 class="modal-title">Checkout Summary</h2>
+        <div class="checkout-steps">
+          <div class="step active">1</div>
+          <div class="step-line"></div>
+          <div class="step">2</div>
+        </div>
+      </div>
 
       <!-- Cart Items Preview -->
       <div id="checkoutItems" class="checkout-items"></div>
 
       <!-- Cart Summary -->
-      <div class="cart-summary">
+      <div class="cart-summary checkout-summary">
         <div class="cart-summary-row">
           <span>Subtotal:</span>
           <span id="checkoutSubtotal">$0.00</span>
@@ -122,13 +197,14 @@
           <span id="checkoutTax">$0.00</span>
         </div>
         <div class="cart-total">
-          <span>Total:</span>
+          <span>Total Amount:</span>
           <span id="checkoutTotal">$0.00</span>
         </div>
       </div>
 
       <!-- Checkout Form -->
       <form id="checkoutForm" class="checkout-form">
+        <h3 class="form-title">Shipping Information</h3>
         <div class="form-row">
           <div class="form-group">
             <input type="text" id="checkoutName" required placeholder=" ">
@@ -143,14 +219,23 @@
         <div class="form-group">
           <select id="checkoutPayment" required>
             <option value="" disabled selected hidden>Select Payment Method</option>
-            <option value="KHQR">KHQR</option>
+            <option value="KHQR">KHQR (Scan to Pay)</option>
             <option value="COD">Cash on Delivery</option>
           </select>
           <label for="checkoutPayment">Payment Method</label>
         </div>
 
-        <div class="modal-actions">
-          <button type="submit" class="btn-primary">Confirm Order</button>
+        <div class="form-agreement">
+          <input type="checkbox" id="termsAgree" required>
+          <label for="termsAgree">I agree to the Terms & Conditions and Privacy Policy</label>
+        </div>
+
+        <div class="modal-actions checkout-actions">
+          <button type="submit" class="btn-primary btn-confirm">
+            <span class="btn-icon">✓</span>
+            Confirm Order
+            <span class="btn-subtext">Secure Payment</span>
+          </button>
           <button type="button" id="cancelCheckout" class="btn-outline">Cancel</button>
         </div>
       </form>
@@ -159,13 +244,72 @@
 
   <!-- QR Payment Modal -->
   <div id="qrBackdrop" class="modal-backdrop">
-    <div class="modal" onclick="event.stopPropagation()">
-      <h2 class="modal-title">Pay with KHQR</h2>
-      <img src="images/QRCODE.JPG" alt="KHQR Code" class="qr-image">
-      <p>Scan this QR code using your banking app to complete the payment.</p>
-      <div class="modal-actions">
-        <button type="button" id="confirmPayment" class="btn-primary">Payment Completed</button>
-        <button type="button" id="cancelQr" class="btn-outline">Cancel</button>
+    <div class="modal qr-modal" onclick="event.stopPropagation()">
+      <div class="qr-header">
+        <h2 class="modal-title">Secure Payment</h2>
+        <div class="checkout-steps">
+          <div class="step">1</div>
+          <div class="step-line"></div>
+          <div class="step active">2</div>
+        </div>
+      </div>
+      <div class="qr-content">
+        <div class="qr-instruction">
+          <div class="instruction-step">
+            <div class="step-number">1</div>
+            <p>Open your banking app</p>
+          </div>
+          <div class="instruction-step">
+            <div class="step-number">2</div>
+            <p>Tap on "Scan QR Code"</p>
+          </div>
+          <div class="instruction-step">
+            <div class="step-number">3</div>
+            <p>Point camera at this code</p>
+          </div>
+        </div>
+        
+        <div class="qr-container">
+          <div class="qr-border">
+            <img src="images/QRCODE.JPG" alt="KHQR Code" class="qr-image">
+          </div>
+          <div class="qr-amount">
+            <span class="qr-label">Amount to Pay:</span>
+            <span id="qrAmount" class="qr-total">$0.00</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-actions qr-actions">
+        <button type="button" id="confirmPayment" class="btn-primary btn-success">
+          <span class="btn-icon">✓</span>
+          Payment Completed
+        </button>
+        <button type="button" id="cancelQr" class="btn-outline">Cancel Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Confirmation Modal -->
+  <div id="confirmationBackdrop" class="modal-backdrop">
+    <div class="modal confirmation-modal" onclick="event.stopPropagation()">
+      <div class="confirmation-icon">✓</div>
+      <h2 class="confirmation-title">Order Confirmed!</h2>
+      <p class="confirmation-message">Thank you for your purchase. Your order has been successfully placed.</p>
+      
+      <div class="confirmation-details">
+        <div class="detail-item">
+          <span class="detail-label">Order ID:</span>
+          <span id="orderId" class="detail-value">#LSP-2025-001</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Estimated Delivery:</span>
+          <span class="detail-value">2-3 Business Days</span>
+        </div>
+      </div>
+      
+      <div class="confirmation-actions">
+        <button id="closeConfirmation" class="btn-primary">Continue Shopping</button>
       </div>
     </div>
   </div>
